@@ -1,5 +1,3 @@
-import is_self_evaluating from './is_self_evaluating'
-
 function eval_lisp(exp, env) {
   if (is_self_evaluating(exp)) return exp
 
