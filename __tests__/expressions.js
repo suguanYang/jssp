@@ -1,4 +1,12 @@
-import { is_self_evaluating, is_variable, is_quoted } from '../src/expression_predicates'
+import {
+  is_self_evaluating,
+  is_variable,
+  is_quoted,
+  text_of_quotation,
+  is_assignment,
+  assignment_value,
+  assigment_variable
+} from '../src/expressions'
 import { create_empty_env } from '../src/env.js'
 
 // console.assert(is_self_evaluating('10'), 'is_self_evaluating("10") expected true, but got false')
@@ -20,5 +28,16 @@ test('is variable', () => {
 })
 
 test('is quoted', () => {
-  expect(is_quoted(`(quted)`))
+  const quoted = `(quote asd)`
+  expect(is_quoted(quoted)).toBeTruthy()
+  expect(text_of_quotation(quoted)).toBe('asd')
+})
+
+
+test('is assignment', () => {
+  const assignmented = `(set! name 'donnie)`
+
+  expect(is_assignment(assignmented)).toBeTruthy()
+  expect(assigment_variable(assignmented)).toBe('name')
+  expect(assignment_value(assignmented)).toBe(`'donnie`)
 })
