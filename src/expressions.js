@@ -40,3 +40,8 @@ export function assignment_value(exp) {
   return car(cdr(cdr(exp)))
 }
 
+export function is_definition(exp) {
+  return is_tagged_list(exp, 'define')
+}
+
+

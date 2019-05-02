@@ -8,9 +8,10 @@ export function create_empty_env(parent_env = null) {
     is_bind: (key) => {
       return container.has(key)
     },
-    get_bind: (key) => {
+    get_bound: (key) => {
       return container.get
     },
     parent: parent_env
   })
 }
+

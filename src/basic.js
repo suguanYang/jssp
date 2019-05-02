@@ -1,9 +1,52 @@
-function list_to_array(list) {
-  return list.slice(1).slice(0, -1).split(' ')
+const OPEND_SYSMBOL = '('
+const CLOSED_SYSMBOL = ')'
+
+const balanced_judgement_cacher = {}
+
+export function is_balanced_paren(exp) {
+  const parse_iter = (sub_exp, opend_times) => {
+    const first = sub_exp[0]
+    const rest = sub_exp.slice(1)
+    if (sub_exp === '') {
+      balanced_judgement_cacher[exp] = opend_times
+      return opend_times === 0
+    }
+    if (first === OPEND_SYSMBOL) return parse_iter(rest, opend_times + 1)
+    if (first === CLOSED_SYSMBOL) return parse_iter(rest, opend_times - 1)
+
+    return parse_iter(rest, opend_times)
+  }
+  return parse_iter(exp, 0)
 }
 
-function array_to_list(array) {
-  return '(' + array.join(' ') + ')'
+export function list_elements(exp) {
+  const withoutWrapperBrackets = exp.slice(1).slice(0, -1)
+  const parser = (items, accumulator, total) => {
+    const [first, ...rest] = [...items]
+    if (first === undefined) return total
+    if (is_balanced_paren(accumulator + first)) {
+      return parser(rest, '', total.concat([accumulator + first]))
+    }
+
+    // split by ' ', so the elements need recovery a space
+    return parser(rest, accumulator + first + ' ', total)
+  }
+  return parser(withoutWrapperBrackets.split(' '), '', [])
+}
+
+export function list_to_array(list) {
+  return list_elements(list).map(item => {
+    if (is_pair(item)) {
+      return list_elements(item)
+    }
+    return item
+  })
+}
+
+export function array_to_list(array) {
+  return array.reduce((pre, cur) => {
+    return pre + ' ' + (Array.isArray(cur) ? array_to_list(cur) : cur)
+  }, '(') + ')'
 }
 
 export function car(exp) {
@@ -13,7 +56,7 @@ export function car(exp) {
 }
 
 // list in javascript are flat,
-// the rest of list are items unless first one in array
+// the rest of list are items but first one of array
 // but the real list we should implememted is like this
 // [
 //  a,
