@@ -1,6 +1,11 @@
-const OPEND_SYSMBOL = '('
-const CLOSED_SYSMBOL = ')'
+import { is_pair } from './type_predicates'
+import { create_empty_env } from './env.js'
+import eval_lisp from './interpreter.js'
 
+const OPEN_SYSMBOL = '('
+const CLOSE_SYSMBOL = ')'
+
+// TODO add cache
 const balanced_judgement_cacher = {}
 
 export function is_balanced_paren(exp) {
@@ -8,11 +13,10 @@ export function is_balanced_paren(exp) {
     const first = sub_exp[0]
     const rest = sub_exp.slice(1)
     if (sub_exp === '') {
-      balanced_judgement_cacher[exp] = opend_times
       return opend_times === 0
     }
-    if (first === OPEND_SYSMBOL) return parse_iter(rest, opend_times + 1)
-    if (first === CLOSED_SYSMBOL) return parse_iter(rest, opend_times - 1)
+    if (first === OPEN_SYSMBOL) return parse_iter(rest, opend_times + 1)
+    if (first === CLOSE_SYSMBOL) return parse_iter(rest, opend_times - 1)
 
     return parse_iter(rest, opend_times)
   }
@@ -35,24 +39,30 @@ export function list_elements(exp) {
 }
 
 export function list_to_array(list) {
-  return list_elements(list).map(item => {
-    if (is_pair(item)) {
-      return list_elements(item)
-    }
-    return item
-  })
+  return list_elements(list).map(item => is_pair(item)
+      ? list_elements(item)
+      : item)
 }
 
 export function array_to_list(array) {
-  return array.reduce((pre, cur) => {
-    return pre + ' ' + (Array.isArray(cur) ? array_to_list(cur) : cur)
-  }, '(') + ')'
+  return array.reduce((pre, cur, index) => pre
+      // insert with space
+      + (index > 0 ? ' ' : '')
+      + (Array.isArray(cur) ? array_to_list(cur) : cur),
+    '(') + ')'
+}
+
+export function cons(part_front, part_back) {
+  return '(' + part_front + ' ' + part_back + ')'
 }
 
 export function car(exp) {
-  return is_pair(exp) ?
-    list_to_array(exp)[0]
-    : null
+  if (!is_pair(exp)) return null
+
+  // car should return a scheme data
+  return Array.isArray(list_to_array(exp)[0])
+    ? array_to_list(list_to_array(exp)[0])
+    : list_to_array(exp)[0]
 }
 
 // list in javascript are flat,
@@ -71,10 +81,7 @@ export function car(exp) {
 export function cdr(exp) {
   return is_pair(exp) ?
     // a cdr should return a list if has
-    array_to_list(
-      list_to_array(exp)
-      .slice(1)
-    )
+    array_to_list(list_to_array(exp).slice(1))
     : null
 }
 
@@ -85,11 +92,13 @@ export function is_tagged_list(exp, tag) {
   return false
 }
 
-export function is_pair(exp) {
-  const length = exp.length
-  if (exp[0] === '(' && exp[length - 1] === ')') {
-    return true
-  }
-  return false
-}
+export function make_lambda(formal_parameters, body, parent_env) {
+  return () => {
+    // create function environment
+    const block_env = create_empty_env(parent_env)
+    // declare formal parameters
+    formal_parameters.forEach(param => block_env.bind(param, undefined))
 
+    return eval_lisp(body, block_env)
+  }
+}

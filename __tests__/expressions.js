@@ -5,7 +5,9 @@ import {
   text_of_quotation,
   is_assignment,
   assignment_value,
-  assigment_variable
+  assigment_variable,
+  is_definition,
+  definition_variable
 } from '../src/expressions'
 import { create_empty_env } from '../src/env.js'
 
@@ -40,4 +42,14 @@ test('is assignment', () => {
   expect(is_assignment(assignmented)).toBeTruthy()
   expect(assigment_variable(assignmented)).toBe('name')
   expect(assignment_value(assignmented)).toBe(`'donnie`)
+})
+
+test('definition', () => {
+  const define_a = `(define num1 1)`
+  const define_b = `(define (add x y) (+ x y))`
+
+  expect(is_definition(define_a)).toBeTruthy()
+  expect(is_definition(define_b)).toBeTruthy()
+  expect(definition_variable(define_a)).toBe('num1')
+  expect(definition_variable(define_b)).toBe('add')
 })

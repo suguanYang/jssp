@@ -1,4 +1,4 @@
-function eval_lisp(exp, env) {
+export default function eval_lisp(exp, env) {
   if (is_self_evaluating(exp)) return exp
 
   if (is_variable(exp)) return look_up_variable_value(exp, env)

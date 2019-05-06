@@ -61,4 +61,11 @@ export function is_primitive_type(exp) {
   return false
 }
 
+export function is_pair(exp) {
+  const length = exp.length
+  if (exp[0] === '(' && exp[length - 1] === ')') {
+    return true
+  }
+  return false
+}
 

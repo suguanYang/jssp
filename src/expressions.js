@@ -1,5 +1,5 @@
-import { is_primitive_type, is_key_char } from './type_predicates'
-import { is_tagged_list, car, cdr } from './basic'
+import { is_primitive_type, is_pair } from './type_predicates'
+import { is_tagged_list, cons, car, cdr } from './basic'
 
 
 export function is_self_evaluating(exp) {
@@ -44,4 +44,30 @@ export function is_definition(exp) {
   return is_tagged_list(exp, 'define')
 }
 
+// definition has two forms
+// 1. (define a 1)
+// 2. (define (add x y) (+ x y))
+export function definition_variable(exp) {
+  if (is_pair(car(cdr(exp)))) {
+    return car(car(cdr(exp)))
+  }
 
+  return car(cdr(exp))
+}
+
+export function definition_paramters(exp) {
+  if (is_pair(car(cdr(exp)))) {
+    return cdr(car(cdr(exp)))
+  }
+
+  return null
+}
+
+export function definition_value(exp, env) {
+  const body = car(cdr(cdr(exp)))
+  if (is_pair(body)) {
+    return make_lambda(definition_paramters(exp), body, env)
+  }
+
+  return body
+}
