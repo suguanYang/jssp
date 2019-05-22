@@ -10,15 +10,14 @@ const balanced_judgement_cacher = {}
 
 export function is_balanced_paren(exp) {
   const parse_iter = (sub_exp, opend_times) => {
-    const first = sub_exp[0]
-    const rest = sub_exp.slice(1)
+    const first_char = sub_exp[0]
     if (sub_exp === '') {
       return opend_times === 0
     }
-    if (first === OPEN_SYSMBOL) return parse_iter(rest, opend_times + 1)
-    if (first === CLOSE_SYSMBOL) return parse_iter(rest, opend_times - 1)
+    if (first_char === OPEN_SYSMBOL) return parse_iter(sub_exp.slice(1), opend_times + 1)
+    if (first_char === CLOSE_SYSMBOL) return parse_iter(sub_exp.slice(1), opend_times - 1)
 
-    return parse_iter(rest, opend_times)
+    return parse_iter(sub_exp.slice(1), opend_times)
   }
   return parse_iter(exp, 0)
 }
@@ -52,8 +51,24 @@ export function array_to_list(array) {
     '(') + ')'
 }
 
-export function cons(part_front, part_back) {
-  return '(' + part_front + ' ' + part_back + ')'
+export function cons(part_car, part_cdr) {
+  return '(' + part_car + ' ' + part_cdr + ')'
+}
+
+// a list should be a sequence of cons
+// but here we do lexcial analysis
+// so we make a lexcial expression
+// of list (a b c d e)
+// not (a (b (c (d))))
+export function list(...elements) {
+  const list_iter = (remain, combination) => {
+    if (remain.length === 0) return combination
+    const [car_part, ...cdr_part] = remain
+    return list_iter(car_part, combination + ' ' + car_part)
+  }
+
+  const [car_part, ...cdr_part] = remain
+  return cons(car_part, list_iter(cdr_part, ''))
 }
 
 export function car(exp) {
@@ -96,8 +111,10 @@ export function make_lambda(formal_parameters, body, parent_env) {
   return () => {
     // create function environment
     const block_env = create_empty_env(parent_env)
-    // declare formal parameters
-    formal_parameters.forEach(param => block_env.bind(param, undefined))
+    // get actual paramters
+    const actual_params = arguments
+    // define formal parameters
+    formal_parameters.forEach((param, index) => block_env.bind(param, actual_params[index]))
 
     return eval_lisp(body, block_env)
   }

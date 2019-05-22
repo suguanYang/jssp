@@ -1,6 +1,5 @@
 import { is_primitive_type, is_pair } from './type_predicates'
-import { is_tagged_list, cons, car, cdr } from './basic'
-
+import { is_tagged_list, list_to_array, car, cdr } from './basic'
 
 export function is_self_evaluating(exp) {
   try {
@@ -55,19 +54,37 @@ export function definition_variable(exp) {
   return car(cdr(exp))
 }
 
-export function definition_paramters(exp) {
-  if (is_pair(car(cdr(exp)))) {
-    return cdr(car(cdr(exp)))
+// definition parameters return javascript array if has
+export function definition_parameters(exp) {
+  const declare_part = car(cdr(exp)) // (add x y)
+  if (is_pair(declare_part)) {
+    const params = cdr(declare_part) // (x y)
+    return list_to_array(params)
   }
 
-  return null
+  return []
 }
 
 export function definition_value(exp, env) {
   const body = car(cdr(cdr(exp)))
   if (is_pair(body)) {
-    return make_lambda(definition_paramters(exp), body, env)
+    // (define (add x y) (+ x y))
+    return make_lambda(definition_parameters(exp), body, env)
   }
 
+  // (define a 1)
   return body
 }
+
+export function is_lambda(exp) {
+  return is_tagged_list(exp, 'lambda')
+}
+
+export function lambda_parameters(exp) {
+  return car(cdr(exp))
+}
+
+export function lambda_body(exp) {
+  return car(cdr(cdr(exp)))
+}
+
