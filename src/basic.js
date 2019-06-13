@@ -1,6 +1,5 @@
 import { is_pair } from './type_predicates'
 import { create_empty_env } from './env.js'
-import eval_lisp from './interpreter.js'
 
 const OPEN_SYSMBOL = '('
 const CLOSE_SYSMBOL = ')'
@@ -39,7 +38,7 @@ export function list_elements(exp) {
 
 export function list_to_array(list) {
   return list_elements(list).map(item => is_pair(item)
-      ? list_elements(item)
+      ? list_to_array(item)
       : item)
 }
 
@@ -62,13 +61,12 @@ export function cons(part_car, part_cdr) {
 // not (a (b (c (d))))
 export function list(...elements) {
   const list_iter = (remain, combination) => {
-    if (remain.length === 0) return combination
-    const [car_part, ...cdr_part] = remain
-    return list_iter(car_part, combination + ' ' + car_part)
+    return remain.length === 1
+      ? combination + remain[0]
+      : list_iter(remain.slice(1), combination + remain[0] + ' ')
   }
 
-  const [car_part, ...cdr_part] = remain
-  return cons(car_part, list_iter(cdr_part, ''))
+  return cons(elements[0], list_iter(elements.slice(1), ''))
 }
 
 export function car(exp) {
@@ -107,15 +105,4 @@ export function is_tagged_list(exp, tag) {
   return false
 }
 
-export function make_lambda(formal_parameters, body, parent_env) {
-  return () => {
-    // create function environment
-    const block_env = create_empty_env(parent_env)
-    // get actual paramters
-    const actual_params = arguments
-    // define formal parameters
-    formal_parameters.forEach((param, index) => block_env.bind(param, actual_params[index]))
 
-    return eval_lisp(body, block_env)
-  }
-}

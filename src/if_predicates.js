@@ -1,4 +1,5 @@
-import { is_tagged_list, car, cdr } from './basic'
+import { is_tagged_list, car, cdr, list } from './basic'
+import eval_lisp from './interpreter.js'
 
 export function is_if(exp) {
   return is_tagged_list(exp, 'if')
@@ -24,6 +25,10 @@ export function if_alternative(exp) {
   return false
 }
 
-export function make_if(predicate, consequence, alternative) {
-  return list('if', predicate, consequence, alternative)
+export function make_if(predicate, consequence, alternative, env) {
+  if (eval_lisp(predicate)){
+    return eval_lisp(consequence, env)
+  } else {
+    return eval_lisp(alternative, env)
+  }
 }

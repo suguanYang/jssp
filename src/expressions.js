@@ -1,5 +1,6 @@
 import { is_primitive_type, is_pair } from './type_predicates'
-import { is_tagged_list, list_to_array, car, cdr } from './basic'
+import { list_elements, is_tagged_list, list_to_array, car, cdr } from './basic'
+import eval_lisp from './interpreter.js'
 
 export function is_self_evaluating(exp) {
   try {
@@ -88,3 +89,63 @@ export function lambda_body(exp) {
   return car(cdr(cdr(exp)))
 }
 
+export function make_lambda(formal_parameters, body, parent_env) {
+  // create function environment
+  const block_env = create_empty_env(parent_env)
+  // get actual paramters
+  const actual_params = arguments
+  // define formal parameters
+  formal_parameters.forEach((param, index) => block_env.bind(param, actual_params[index]))
+
+  return eval_lisp(body, block_env)
+}
+
+export function is_begin(exp) {
+  return is_tagged_list(exp, 'brgin')
+}
+
+export function begin_actions(exp) {
+  return cdr(exp)
+}
+
+export function is_last_exp(seq) {
+  return null === cdr(exp)
+}
+
+export function first_exp(seq) {
+  return car(seq)
+}
+
+export function rest_exp(seq) {
+  return cdr(seq)
+}
+
+export function make_begin(seq) {
+  return list_elements(seq).reduce((_, s) => eval_lisp(s))
+}
+
+// A procedure application is any compound expression that is not one of the
+// above expression types.
+export function is_application(exp) {
+  return is_pair(exp)
+}
+
+export function operation(exp) {
+  return car(exp)
+}
+
+export function opreands(exp) {
+  return cdr(exp)
+}
+
+export function is_no_operands(ops) {
+  return null === ops
+}
+
+export function first_operand(ops) {
+  return car(ops)
+}
+
+export function rest_operands(ops) {
+  return cdr(ops)
+}

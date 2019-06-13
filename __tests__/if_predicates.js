@@ -18,4 +18,7 @@ test('if_predicates', () => {
   const alternative_com = `(- b 1)`
   expect(if_alternative(if_statement)).toEqual(alternative)
   expect(if_alternative(if_statement_complcation)).toEqual(alternative_com)
+
+  // const statement = `(if (> 1 2) 1 2)`
+  // expect(make_if(`(> 1 2)`, 'a', 'b')).toEqual(statement)
 })
